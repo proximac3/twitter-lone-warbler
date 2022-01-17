@@ -21,6 +21,7 @@ app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "it's a secret")
 toolbar = DebugToolbarExtension(app)
+app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
 connect_db(app)
 
@@ -112,6 +113,14 @@ def login():
 @app.route('/logout')
 def logout():
     """Handle logout of user."""
+
+    #Log out user
+    do_logout()
+
+    #Flask logout success to user
+    flash("Logout Successfully", 'success')
+    
+    return redirect('/login')
 
     # IMPLEMENT THIS
 
