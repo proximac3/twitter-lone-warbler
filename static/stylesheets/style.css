@@ -541,3 +541,11 @@ p.card-bio {
 .message-404 .form-inline input {
   flex: 1;
 }
+
+
+/* Header image resizing */
+#header_image{
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
