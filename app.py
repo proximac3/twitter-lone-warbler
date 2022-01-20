@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
-from forms import UserAddForm, LoginForm, MessageForm
+from forms import UserAddForm, LoginForm, MessageForm, UpdateUserForm
 from models import db, connect_db, User, Message
 
 CURR_USER_KEY = "curr_user"
@@ -216,11 +216,38 @@ def stop_following(follow_id):
     return redirect(f"/users/{g.user.id}/following")
 
 
-@app.route('/users/profile', methods=["GET", "POST"])
-def profile():
+@app.route('/users/<int:user_id>/profile', methods=["GET", "POST"])
+def profile(user_id):
     """Update profile for current user."""
+    #query current user
+    user = User.query.get_or_404(user_id)
 
-    # IMPLEMENT THIS
+    #create and pre populate edit form
+    form = UpdateUserForm(obj=user)
+
+    #validate submitted form data
+    if form.validate_on_submit():
+        """Validate incoming form"""
+
+        # authenticate password.
+        check_user = User.authenticate(user.username, form.password.data)
+
+        if check_user:
+            """If password is correct update user changes"""
+            user.username = form.username.data
+            user.image_url = form.image_url.data
+            user.header_image_url = form.header_image_url.data
+            user.bio = form.bio.data
+            user.location = form.location.data
+
+            db.session.commit()
+            return redirect(f'users/{user.id}')
+        else:
+            """If password is incorrect, flask error message and reload page """
+            flash("Incorrect password")
+            return redirect(f'/users/{user.id}/profile')
+    else:
+        return render_template('users/edit.html', form=form, user=user)
 
 
 @app.route('/users/delete', methods=["POST"])
@@ -306,8 +333,10 @@ def homepage():
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
-
-        return render_template('home.html', messages=messages)
+    
+        #query current user
+        user1 = User.query.get(g.user.id)
+        return render_template('home.html', messages=messages, user=user1)
 
     else:
         return render_template('home-anon.html')
