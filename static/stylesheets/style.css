@@ -549,3 +549,13 @@ p.card-bio {
   height: 100%;
   overflow: hidden;
 }
+
+/* Liked messages start */
+.fa-star{
+  color: skyblue;
+}
+
+
+
+
+

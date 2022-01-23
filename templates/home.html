@@ -54,15 +54,21 @@
                 <p>{{ msg.text }}</p>
               </div>
               
-              <form method="POST" action="/users/add_like/{{ msg.id }}"     id="messages-form">
-                  <button class="
-                  btn 
-                  btn-sm 
-                  {{'btn-primary' if msg.id in likes else 'btn-secondary'}}"
-                  >
-                  <i class="fa fa-thumbs-up"></i> 
-                </button>
-              </form>
+              {% if msg.user.id != user.id%}
+                <form method="POST" action="/users/add_like/{{ msg.id }}"     id="messages-form">
+                    <button class="
+                    btn 
+                    btn-sm 
+                    {{'btn-primary' if msg.id in likes else 'btn-secondary'}}"
+                    >
+                    {% if msg in user.likes%} 
+                      <i class="far fa-star"></i> 
+                    {%else%}
+                      <i class="fa fa-thumbs-up"></i> 
+                    {% endif %}
+                  </button>
+                </form>
+              {% endif %}
             </li>
           {% endif %}
 

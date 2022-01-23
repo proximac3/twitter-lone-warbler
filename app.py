@@ -5,7 +5,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
 from forms import UserAddForm, LoginForm, MessageForm, UpdateUserForm
-from models import db, connect_db, User, Message
+from models import db, connect_db, User, Message, Likes
 
 CURR_USER_KEY = "curr_user"
 
@@ -124,6 +124,11 @@ def logout():
 
     # IMPLEMENT THIS
 
+#############################################################################
+#status code error handling
+@app.errorhandler(404)
+def not_foun(e):
+    return render_template('404_error.html'), 404
 
 ##############################################################################
 # General user routes:
@@ -317,8 +322,6 @@ def messages_destroy(message_id):
 
 ##############################################################################
 # Homepage and error pages
-
-
 @app.route('/')
 def homepage():
     """Show homepage:
@@ -326,7 +329,7 @@ def homepage():
     - anon users: no messages
     - logged in: 100 most recent messages of followed_users
     """
-
+    #check for current user
     if g.user:
         messages = (Message
                     .query
@@ -341,6 +344,47 @@ def homepage():
     else:
         return render_template('home-anon.html')
 
+
+
+##################################################################################
+#likes routes
+
+@app.route('/users/add_like/<int:msg_id>', methods=['POST'])
+def add_like(msg_id):
+    """process liked message"""
+
+    #check for current user
+    if g.user:
+        #query message
+        msg = Message.query.get(msg_id)
+
+        if msg not in g.user.likes:
+            #if message not liked, like
+            liked_msg = Likes(user_id=g.user.id, message_id=msg_id)
+            db.session.add(liked_msg)
+            db.session.commit()
+            return redirect('/')
+        else:
+            #if message liked, unlike
+            for messages in g.user.likes:
+                if messages == msg:
+                    Likes.query.filter(Likes.message_id == msg_id).delete()
+                    db.session.commit()
+            return redirect('/')
+    else:
+        return render_template('home-anon.html')
+
+
+@app.route('/users/show_like/<int:user_id>')
+def show_likes(user_id):
+    """Show user liked messages """
+
+    if g.user:
+        user = User.query.get(user_id)
+
+        return render_template('users/likes.html', user=g.user)
+    else:
+        return render_template('home-anon.html')
 
 ##############################################################################
 # Turn off all caching in Flask
