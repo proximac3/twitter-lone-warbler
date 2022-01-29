@@ -132,7 +132,6 @@ def not_foun(e):
 
 ##############################################################################
 # General user routes:
-
 @app.route('/users')
 def list_users():
     """Page with listing of users.
@@ -215,7 +214,8 @@ def stop_following(follow_id):
         return redirect("/")
 
     followed_user = User.query.get(follow_id)
-    g.user.following.remove(followed_user)
+
+    # g.user.following.remove(followed_user)
     db.session.commit()
 
     return redirect(f"/users/{g.user.id}/following")
@@ -233,10 +233,8 @@ def profile(user_id):
     #validate submitted form data
     if form.validate_on_submit():
         """Validate incoming form"""
-
         # authenticate password.
         check_user = User.authenticate(user.username, form.password.data)
-
         if check_user:
             """If password is correct update user changes"""
             user.username = form.username.data
@@ -277,7 +275,6 @@ def delete_user():
 @app.route('/messages/new', methods=["GET", "POST"])
 def messages_add():
     """Add a message:
-
     Show form if GET. If valid, update message and redirect to user page.
     """
 
@@ -300,7 +297,7 @@ def messages_add():
 @app.route('/messages/<int:message_id>', methods=["GET"])
 def messages_show(message_id):
     """Show a message."""
-
+    
     msg = Message.query.get(message_id)
     return render_template('messages/show.html', message=msg)
 
